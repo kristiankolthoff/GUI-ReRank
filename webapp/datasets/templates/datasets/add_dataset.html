@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5" style="min-height: 80vh; background: linear-gradient(120deg, #f8fafc 60%, #e9ecef 100%);">
+  <div class="row justify-content-center align-items-center">
+    <div class="col-md-7 col-lg-6">
+      <div class="card shadow rounded-4 border-0">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <span class="display-5 text-primary"><i class="bi bi-plus-square"></i></span>
+            <h2 class="fw-bold mt-2 mb-1">Add Dataset</h2>
+            <p class="text-muted mb-0">Upload a new dataset by providing a name and a ZIP file of GUI screenshots.</p>
+          </div>
+          <form method="post" enctype="multipart/form-data" autocomplete="off">
+            {% csrf_token %}
+            <div class="mb-4">
+              <label for="id_name" class="form-label fw-semibold">Name</label>
+              {{ form.name }}
+            </div>
+            <div class="mb-4">
+              <label for="id_zip_file" class="form-label fw-semibold">GUI Screenshots (ZIP)
+                <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="The ZIP file must contain GUI screenshots in .png or .jpg format."></i>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-white border-end-0"><i class="bi bi-file-earmark-zip"></i></span>
+                {{ form.zip_file }}
+              </div>
+              <div class="form-text">Upload a ZIP file containing your GUI screenshots.</div>
+            </div>
+            <!-- LLM Model Selection -->
+            <div class="mb-4">
+              <label for="llm_model" class="form-label fw-semibold">LLM Model
+                <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="The LLM is used to annotate each GUI screenshot"></i>
+              </label>
+              <select class="form-select" id="llm_model" name="llm_model" required>
+                {% for value, display in llm_options %}
+                  <option value="{{ value }}" {% if value == default_llm %}selected{% endif %}>{{ display }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Embedding Model Selection -->
+            <div class="mb-4">
+              <label for="embedding_model" class="form-label fw-semibold">Embedding Model
+                <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="The embedding model is used to compute embeddings based on the annotations"></i>
+              </label>
+              <select class="form-select" id="embedding_model" name="embedding_model_select" required onchange="updateEmbeddingFields()">
+                {% for model_type, value, display in embedding_options %}
+                  <option value="{{ model_type }}|{{ value }}" {% if model_type == default_embedding_type and value == default_embedding_name %}selected{% endif %}>{{ display }}</option>
+                {% endfor %}
+              </select>
+              <input type="hidden" id="embedding_model_type" name="embedding_model_type" value="{{ default_embedding_type }}">
+              <input type="hidden" id="embedding_model_name" name="embedding_model_name" value="{{ default_embedding_name }}">
+            </div>
+            <script>
+              function updateEmbeddingFields() {
+                var select = document.getElementById('embedding_model');
+                var selected = select.options[select.selectedIndex].value.split('|');
+                document.getElementById('embedding_model_type').value = selected[0];
+                document.getElementById('embedding_model_name').value = selected[1];
+              }
+            </script>
+            <!-- Batch Size Selection -->
+            <div class="mb-4">
+              <label for="batch_size" class="form-label fw-semibold">Batch Size
+                <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="The number of GUIs that are simultaneously annotated and embedded. Default and recommended: 5. Larger sizes reduce API calls and token consumption slightly but might lead to worse annotations results and mismatchings"></i>
+              </label>
+              <select class="form-select" id="batch_size" name="batch_size" required>
+                {% for size in batch_size_options %}
+                  <option value="{{ size }}" {% if size == 5 %}selected{% endif %}>{{ size }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <!-- Search Dimensions Section -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Search Dimensions
+                <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Specify the search dimensions for this dataset. You can remove defaults or add your own. Only name and description are required; other values use defaults."></i>
+              </label>
+              <div id="search-dimensions-list"></div>
+              <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-dimension-btn"><i class="bi bi-plus"></i> Add Dimension</button>
+              <input type="hidden" name="search_dimensions_json" id="search_dimensions_json">
+            </div>
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                // Default search dimensions injected from backend
+                let searchDimensions = Array.isArray(window.defaultSearchDimensions) ? window.defaultSearchDimensions : [];
+                try {
+                  searchDimensions = JSON.parse('{{ default_search_dimensions|escapejs }}');
+                } catch (e) {}
+                function renderSearchDimensions() {
+                  const list = document.getElementById('search-dimensions-list');
+                  list.innerHTML = '';
+                  searchDimensions.forEach((dim, idx) => {
+                    const row = document.createElement('div');
+                    row.className = 'input-group mb-2';
+                    row.innerHTML = `
+                      <input type="text" class="form-control" placeholder="Name" value="${dim.name || ''}" onchange="updateSearchDimension(${idx}, 'name', this.value)">
+                      <input type="text" class="form-control" placeholder="Description" value="${dim.annotation_description || ''}" onchange="updateSearchDimension(${idx}, 'annotation_description', this.value)">
+                      <button type="button" class="btn btn-outline-danger" onclick="removeSearchDimension(${idx})"><i class="bi bi-trash"></i></button>
+                    `;
+                    list.appendChild(row);
+                  });
+                  document.getElementById('search_dimensions_json').value = JSON.stringify(searchDimensions);
+                }
+                window.addSearchDimension = function() {
+                  searchDimensions.push({name: '', annotation_description: ''});
+                  renderSearchDimensions();
+                }
+                window.removeSearchDimension = function(idx) {
+                  searchDimensions.splice(idx, 1);
+                  renderSearchDimensions();
+                }
+                window.updateSearchDimension = function(idx, field, value) {
+                  searchDimensions[idx][field] = value;
+                  document.getElementById('search_dimensions_json').value = JSON.stringify(searchDimensions);
+                }
+                renderSearchDimensions();
+                document.getElementById('add-dimension-btn').onclick = window.addSearchDimension;
+                // Enable Bootstrap tooltips
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                  new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+              });
+            </script>
+            <div class="d-flex flex-column gap-3 mt-4">
+              <button type="submit" class="btn btn-success btn-lg w-100 rounded-3 shadow-sm"><i class="bi bi-check-circle me-2"></i>Start</button>
+              <a href="{% url 'dataset_list' %}" class="btn btn-outline-secondary btn-lg w-100 rounded-3 btn-cancel-hover"><i class="bi bi-arrow-left me-2"></i>Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Bootstrap Icons CDN (if not already included) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+  .btn-cancel-hover:hover, .btn-cancel-hover:focus {
+    color: #fff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+  }
+</style>
+{% endblock %} 

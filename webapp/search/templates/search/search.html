@@ -1,0 +1,692 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="search-flex-wrapper d-flex flex-column">
+  <div class="flex-grow-1">
+    <div class="search-page-bg py-4">
+      <div class="container">
+        <div class="row justify-content-center mb-4">
+          <div class="col-lg-10 col-xl-9">
+            <div class="card shadow-lg border-0 rounded-4 search-config-card mb-4" style="background: #fff;">
+              <div class="card-body p-4 p-md-5">
+                <form id="search-form" class="mb-0">
+                  <div class="input-group mb-4">
+                    <input type="text" id="search-query" name="query" class="form-control form-control-lg rounded-start-3" placeholder="Type your query..." autofocus>
+                    <button type="submit" class="btn btn-primary btn-lg rounded-end-3">Search</button>
+                  </div>
+                  <!-- Collapsible Configurations -->
+                  <div class="accordion w-100 mb-0" id="searchConfigAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingConfig">
+                            <button class="fw-bold accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfig" aria-expanded="false" aria-controls="collapseConfig">
+                                Search Configuration
+                            </button>
+                        </h2>
+                        <div id="collapseConfig" class="accordion-collapse collapse" aria-labelledby="headingConfig" data-bs-parent="#searchConfigAccordion">
+                            <div class="accordion-body">
+                                <!-- Embedding-Retrieval Section (simple collapse) -->
+                                <div class="card mb-2">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <span class="fw-bold">1. Embedding-Retrieval
+                                            <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Configure how results are retrieved using embeddings"></i>
+                                        </span>
+                                        <button class="btn btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEmbedding" aria-expanded="false" aria-controls="collapseEmbedding">
+                                            <i class="bi bi-chevron-down" id="arrow-embedding"></i>
+                                        </button>
+                                    </div>
+                                    <div id="collapseEmbedding" class="collapse">
+                                        <div class="accordion-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6 d-flex align-items-center">
+                                                    <label for="embedding_topk" class="form-label fw-bold me-2 mb-0" data-bs-toggle="tooltip" title="Number of top results to return">Top-k</label>
+                                                    <input type="range" class="form-range w-50" min="10" max="500" step="1" id="embedding_topk" name="embedding_topk" value="200">
+                                                    <span class="ms-2" id="embedding_topk_val">200</span>
+                                                </div>
+                                                <div class="col-md-6 d-flex align-items-center justify-content-end">
+                                                    <label for="embedding_threshold" class="form-label fw-bold me-2 mb-0" data-bs-toggle="tooltip" title="Score threshold for result cutoff">Threshold</label>
+                                                    <input type="range" class="form-range w-50" min="0" max="1" step="0.01" id="embedding_threshold" name="embedding_threshold" value="0.05">
+                                                    <span class="ms-2" id="embedding_threshold_val">0.05</span>
+                                                </div>
+                                            </div>
+                                            <hr/>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="fw-bold me-2">Weighting
+                                                    <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="Adjust the importance of each aspect in the search"></i>
+                                                </span>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="embedding_weighting_enable" name="embedding_weighting_enable" data-bs-toggle="tooltip" title="Enable or disable weighting mode">
+                                                </div>
+                                            </div>
+                                            <div id="collapseEmbeddingWeighting" class="collapse weighting-section">
+                                                <div class="row border rounded p-2 mb-3" style="background-color: #e3f2fd;">
+                                                    {% for dim in search_dimensions %}
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label for="embedding_weight_{{ dim.name }}" class="form-label fw-bold">{{ dim.name|capfirst }}</label>
+                                                            <input type="range" class="form-range" min="0" max="1" step="0.01" id="embedding_weight_{{ dim.name }}" name="embedding_weight_{{ dim.name }}" value="{{ dim.weight }}">
+                                                            <span id="embedding_weight_{{ dim.name }}_val">{{ dim.weight }}</span>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- LLM-Reranking Section (simple collapse) -->
+                                <div class="card mb-2">
+                                    <div class="card-header d-flex align-items-center justify-content-between">
+                                        <span class="fw-bold">2. LLM-Reranking
+                                            <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip" title="Configure reranking of results using a Large Language Model"></i>
+                                        </span>
+                                        <div class="d-flex align-items-center">
+                                            <div class="form-check form-switch me-2">
+                                                <input class="form-check-input" type="checkbox" id="llm_enable" name="llm_enable" data-bs-toggle="tooltip" title="Enable or disable LLM reranking">
+                                            </div>
+                                            <button class="btn btn-link p-0 border-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLLM" aria-expanded="false" aria-controls="collapseLLM">
+                                                <i class="bi bi-chevron-down" id="arrow-llm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="collapseLLM" class="collapse">
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6 d-flex align-items-center">
+                                                    <label for="llm_topk" class="form-label fw-bold me-2 mb-0" data-bs-toggle="tooltip" title="Number of top results to return">Top-k</label>
+                                                    <input type="range" class="form-range w-50" min="10" max="500" step="1" id="llm_topk" name="llm_topk" value="200">
+                                                    <span class="ms-2" id="llm_topk_val">200</span>
+                                                </div>
+                                                <div class="col-md-6 d-flex align-items-center justify-content-end">
+                                                    <label for="llm_threshold" class="form-label fw-bold me-2 mb-0" data-bs-toggle="tooltip" title="Score threshold for result cutoff">Threshold</label>
+                                                    <input type="range" class="form-range w-50" min="0" max="1" step="0.01" id="llm_threshold" name="llm_threshold" value="0.05">
+                                                    <span class="ms-2" id="llm_threshold_val">0.05</span>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <label for="llm_model" class="form-label fw-bold">Model</label>
+                                                    <select class="form-select" id="llm_model" name="llm_model">
+                                                        {% for model_value, model_label in llm_options %}
+                                                            <option value="{{ model_value }}" {% if model_value == default_llm %}selected{% endif %}>{{ model_label }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="llm_type" class="form-label fw-bold">Type</label>
+                                                    <select class="form-select" id="llm_type" name="llm_type">
+                                                        <option value="text">Text</option>
+                                                        <option value="image">Image</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4 d-flex align-items-center">
+                                                    <label for="llm_temp" class="form-label fw-bold me-2 mb-0">Temp</label>
+                                                    <input type="range" class="form-range w-50" min="0" max="1" step="0.01" id="llm_temp" name="llm_temp" value="0.05">
+                                                    <span class="ms-2" id="llm_temp_val">0.05</span>
+                                                </div>
+                                            </div>
+                                            <hr/>
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="fw-bold me-2">Weighting
+                                                    <i class="bi bi-info-circle ms-1" data-bs-toggle="tooltip" title="Adjust the importance of each aspect in the search"></i>
+                                                </span>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="llm_weighting_enable" name="llm_weighting_enable" data-bs-toggle="tooltip" title="Enable or disable weighting mode">
+                                                </div>
+                                                <button class="btn btn-outline-secondary btn-sm ms-2" type="button" id="copy-embedding-weights" data-bs-toggle="tooltip" title="Copy weights from Embedding-Retrieval">
+                                                    <i class="bi bi-arrow-down-square"> Copy weights from above</i>
+                                                </button>
+                                            </div>
+                                            <div id="collapseLLMWeighting" class="collapse weighting-section">
+                                                <div class="row border rounded p-2 mb-3" style="background-color: #e3f2fd;">
+                                                    {% for dim in search_dimensions %}
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label for="llm_weight_{{ dim.name }}" class="form-label fw-bold">{{ dim.name|capfirst }}</label>
+                                                            <input type="range" class="form-range" min="0" max="1" step="0.01" id="llm_weight_{{ dim.name }}" name="llm_weight_{{ dim.name }}" value="{{ dim.weight }}">
+                                                            <span id="llm_weight_{{ dim.name }}_val">{{ dim.weight }}</span>
+                                                        </div>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+          </div>
+        </div>
+        <!--<div class="row justify-content-center mb-3">
+          <div class="col-lg-10 col-xl-9">
+            <div class="search-divider my-2" style="height: 2px; background: linear-gradient(90deg, #e0e3ea 0%, #f8f9fa 100%); border-radius: 1px;"></div>
+          </div>
+        </div>-->
+        <div class="row fade-in-results" id="search-results-row">
+          <div class="col-12">
+            <div class="row row-cols-1 row-cols-md-3 row-cols-xl-4 g-4" id="search-results">
+              <!-- Search results will be rendered here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Modal for card details -->
+    <div class="modal fade" id="cardDetailModal" tabindex="-1" aria-labelledby="cardDetailModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xxl modal-dialog-centered modal-custom-width">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title w-100 text-center" id="cardDetailModalLabel" style="width:100%;text-align:center;">GUI Details and Scoring Summary</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-0 d-flex flex-column" style="max-height: 85vh; overflow: hidden;">
+            <div class="d-flex flex-column flex-md-row h-100" style="margin:0; min-height: 0; height: 100%;">
+              <div class="col-12 col-md-5 d-flex p-4 flex-shrink-0" style="background: #f8f9fa; border-right: 1px solid #e0e3ea; box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1.5px 4px rgba(0,0,0,0.04); border-radius: 18px; min-height: 300px; height: 100%;">
+                <div class="d-flex flex-column align-items-center justify-content-center m-0 h-100 left-modal-inner-card" style="height: 100%; min-height: 300px; justify-content: center; max-width: 350px; width: 90%; margin-right: auto; background: #f8f9fa; border-radius: 18px;">
+                  <div id="modal-image-container" class="w-100 mb-3 d-flex justify-content-center align-items-center" style="min-height: 0; width: 100%;">
+                    <!-- Image will be inserted here -->
+                  </div>
+                  <div id="modal-meta" class="d-flex flex-row justify-content-center align-items-center gap-3 w-100 mb-3" style="margin-top: 0.5rem;">
+                    <!-- Name, Score, Rank -->
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-7 p-4 d-flex flex-column modal-right-scroll flex-grow-1" style="min-height: 0; height: 100%; font-family: system-ui, Arial, sans-serif;">
+                <div class="mb-4 flex-grow-1" style="min-height: 0;">
+                  <div id="modal-annotation" class="bg-light rounded p-3 mb-0 annotation-list" style="font-size: 1.04rem; min-height: 60px;"></div>
+                </div>
+                <div id="modal-llm-breakdown-section" style="display:none;">
+                  <h6 class="fw-bold mb-2">LLM Reranking Breakdown</h6>
+                  <div id="modal-llm-breakdown" class="bg-light rounded p-3 mb-0" style="font-size: 1.04rem; font-family: system-ui, Arial, sans-serif;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+    .bi.rotate {
+        transform: rotate(180deg);
+        transition: transform 0.2s;
+    }
+    .weighting-section {
+        background-color: #e3f2fd !important; /* Bootstrap blue-100 */
+    }
+    .weighting-section .form-range {
+        background-color: transparent !important;
+    }
+    .search-result-card {
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1.5px 4px rgba(0,0,0,0.04);
+        overflow: hidden;
+        background: #fff;
+        transition: box-shadow 0.2s, transform 0.2s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        border: 2px solid #e0e3ea;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .search-result-card:hover {
+        box-shadow: 0 8px 32px rgba(0,0,0,0.16), 0 3px 8px rgba(0,0,0,0.08);
+        transform: translateY(0) scale(1.04);
+    }
+    .search-result-image-container {
+        background: #fff;
+        border: 1px solid #8d92a0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 0.7rem auto 0.7rem auto;
+        max-width: 90%;
+        display: block;
+    }
+    .search-result-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: contain;
+        background: transparent;
+        border-radius: inherit;
+        border: none;
+    }
+    .search-result-body {
+        padding: 0.7rem 1.2rem 0.9rem 1.2rem;
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    .search-result-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: #222;
+        word-break: break-word;
+        text-align: center;
+    }
+    .search-result-meta {
+        font-size: 0.97rem;
+        color: #666;
+        margin-bottom: 0.2rem;
+        display: flex;
+        gap: 1.2em;
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+    .search-result-score {
+        font-weight: 700;
+        color: #1976d2;
+    }
+    .search-result-rank {
+        font-weight: 500;
+        color: #43a047;
+    }
+    @media (max-width: 768px) {
+        .search-result-body { padding: 0.5rem 0.7rem 0.7rem 0.7rem; }
+        .search-result-title { font-size: 1rem; }
+        .search-result-image { min-height: 120px; max-height: 200px; }
+    }
+    .fade-in-wrapper {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: fadeInUp 0.6s forwards;
+    }
+    @keyframes fadeInUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .annotation-list {
+        background: #f6f8fa;
+        border-radius: 10px;
+        padding: 1.1rem 1.2rem;
+        margin: 0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .annotation-item {
+        margin-bottom: 1.1rem;
+    }
+    .annotation-key {
+        font-weight: 600;
+        color: #1976d2;
+        font-size: 1.08rem;
+        margin-bottom: 0.2rem;
+        display: block;
+    }
+    .annotation-value {
+        color: #222;
+        font-size: 1.01rem;
+        margin-bottom: 0;
+        white-space: pre-line;
+    }
+  @media (max-width: 767.98px) {
+    #cardDetailModal .modal-dialog.modal-custom-width {
+      max-width: 95vw !important;
+      width: 95vw !important;
+      min-width: unset !important;
+      margin: 0.8rem auto;
+    }
+    #cardDetailModal .col-md-5, #cardDetailModal .col-md-7 {
+      min-width: 100%;
+      border-right: none !important;
+      border-bottom: 1px solid #e0e3ea;
+    }
+    #cardDetailModal .col-md-7 {
+      border-bottom: none !important;
+    }
+    #cardDetailModal #modal-image-container img {
+      max-width: 100%;
+      max-height: 50vh;
+      height: auto;
+      width: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    #cardDetailModal .col-md-5 {
+      max-width: 500px;
+      min-height: 220px;
+    }
+  }
+  #cardDetailModal .modal-dialog.modal-custom-width {
+    max-width: 1100px;
+    width: 95vw;
+    min-width: 320px;
+  }
+  #cardDetailModal #modal-image-container img {
+    max-width: 100%;
+    max-height: 60vh;
+    height: auto;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  #cardDetailModal .modal-title {
+    width: 100%;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin: 0 auto;
+  }
+  #cardDetailModal .modal-right-scroll {
+    font-family: system-ui, Arial, sans-serif;
+    font-size: 1.04rem;
+    overflow-y: auto;
+    max-height: 70vh;
+    min-height: 0;
+  }
+  #cardDetailModal .annotation-list, #cardDetailModal #modal-llm-breakdown {
+    font-family: inherit;
+    font-size: 1.04rem;
+    background: #f6f8fa;
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+    margin: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    word-break: break-word;
+    white-space: pre-line;
+  }
+  #cardDetailModal .left-modal-inner-card {
+    max-width: 350px;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    background: #f8f9fa;
+    border-radius: 18px;
+  }
+  @media (min-width: 768px) {
+    #cardDetailModal .left-modal-inner-card {
+      margin-left: 1.5rem;
+    }
+  }
+  body, .search-page-bg {
+    background: #f4f6fb !important;
+  }
+  .search-config-card {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 1.5px 4px rgba(0,0,0,0.04) !important;
+    border-radius: 24px !important;
+    border: none !important;
+  }
+  .search-divider {
+    margin-top: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .fade-in-results {
+    animation: fadeInUp 0.7s cubic-bezier(0.23, 1, 0.32, 1) 0.1s both;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var dimensionNames = [{% for dim in search_dimensions %}'{{ dim.name }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+// Update slider value displays
+function bindSliderValue(sliderId, valueId) {
+        const slider = document.getElementById(sliderId);
+        const value = document.getElementById(valueId);
+        if (slider && value) {
+            slider.addEventListener('input', () => value.textContent = slider.value);
+            value.textContent = slider.value;
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dynamically bind slider value displays for all search dimensions
+        dimensionNames.forEach(function(name) {
+            bindSliderValue('embedding_weight_' + name, 'embedding_weight_' + name + '_val');
+            bindSliderValue('llm_weight_' + name, 'llm_weight_' + name + '_val');
+        });
+        bindSliderValue('embedding_topk', 'embedding_topk_val');
+        bindSliderValue('embedding_threshold', 'embedding_threshold_val');
+        bindSliderValue('llm_topk', 'llm_topk_val');
+        bindSliderValue('llm_threshold', 'llm_threshold_val');
+        bindSliderValue('llm_temp', 'llm_temp_val');
+
+        // Enable/disable weighting options
+        function setupWeighting(section) {
+            var enableSwitch = document.getElementById(section + '_weighting_enable');
+            var collapseId = 'collapse' + (section === 'embedding' ? 'EmbeddingWeighting' : 'LLMWeighting');
+            var collapseEl = document.getElementById(collapseId);
+            function setEnabled(enabled) {
+                dimensionNames.forEach(function(name) {
+                    var slider = document.getElementById(section + '_weight_' + name);
+                    if (slider) slider.disabled = !enabled;
+                });
+            }
+            // Set initial state
+            setEnabled(false);
+            if (collapseEl) collapseEl.classList.remove('show');
+            enableSwitch.addEventListener('change', function() {
+                setEnabled(this.checked);
+                if (collapseEl) {
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+                        var bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapseEl);
+                        if (this.checked) {
+                            bsCollapse.show();
+                        } else {
+                            bsCollapse.hide();
+                        }
+                    } else {
+                        if (this.checked) {
+                            collapseEl.classList.add('show');
+                        } else {
+                            collapseEl.classList.remove('show');
+                        }
+                    }
+                }
+            });
+        }
+        setupWeighting('embedding');
+        setupWeighting('llm');
+
+        // Enable/disable LLM section
+        document.getElementById('llm_enable').addEventListener('change', function() {
+            const enabled = this.checked;
+            document.querySelectorAll('#collapseLLM input, #collapseLLM select').forEach(el => {
+                if (el.id !== 'llm_enable') el.disabled = !enabled;
+            });
+        });
+        // Initial state
+        document.getElementById('llm_enable').dispatchEvent(new Event('change'));
+
+        // Add copy weights functionality
+        document.getElementById('copy-embedding-weights').addEventListener('click', function() {
+            dimensionNames.forEach(function(name) {
+                var embSlider = document.getElementById('embedding_weight_' + name);
+                var llmSlider = document.getElementById('llm_weight_' + name);
+                var llmVal = document.getElementById('llm_weight_' + name + '_val');
+                if (embSlider && llmSlider) {
+                    llmSlider.value = embSlider.value;
+                    if (llmVal) llmVal.textContent = embSlider.value;
+                    // Trigger input event in case there are listeners
+                    llmSlider.dispatchEvent(new Event('input'));
+                }
+            });
+        });
+
+        // Search form submission
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            // Enable all disabled fields temporarily to collect their values
+            const disabled = Array.from(form.querySelectorAll(':disabled'));
+            disabled.forEach(el => el.disabled = false);
+            const formData = new FormData(form);
+            // Restore disabled state
+            disabled.forEach(el => el.disabled = true);
+            const data = {};
+            formData.forEach((value, key) => data[key] = value);
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = `
+                        <div class="d-flex flex-column align-items-center justify-content-center w-100 py-5">
+                            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div class="fw-semibold text-secondary" style="font-size: 1.15rem;">Searching for GUIs...</div>
+                        </div>
+                    `;
+            fetch('/search/api/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultsContainer.innerHTML = '';
+                if (!data.results || data.results.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div class="alert alert-warning d-flex flex-column align-items-center justify-content-center gap-2 py-4 w-100 text-center" role="alert" style="font-size:1.1rem;">
+                            <i class="bi bi-exclamation-triangle-fill" style="font-size:1.5rem;"></i>
+                            <span>No results found.</span>
+                        </div>
+                    `;
+                } else {
+                    data.results.forEach((result, idx) => {
+                        const col = document.createElement('div');
+                        col.className = 'col';
+                        col.innerHTML = `
+                            <div class="search-result-card">
+                                <div class="fade-in-wrapper">
+                                    <div class="search-result-image-container">
+                                        <img src="${result.image}" class="search-result-image" alt="${result.name}">
+                                    </div>
+                                    <div class="search-result-body">
+                                        <div class="search-result-title">Name: ${result.name}</div>
+                                        <div class="search-result-meta">
+                                            <span class="search-result-score">Score: ${result.score}</span>
+                                            <span class="search-result-rank">Rank: #${result.rank}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        resultsContainer.appendChild(col);
+                        // Stagger animation
+                        const fadeWrapper = col.querySelector('.fade-in-wrapper');
+                        fadeWrapper.style.animationDelay = (idx * 0.08) + 's';
+
+                        // Card click handler for modal
+                        col.querySelector('.search-result-card').addEventListener('click', function() {
+                            // Image
+                            document.getElementById('modal-image-container').innerHTML = `<img src="${result.image}" class="search-result-image w-100" alt="${result.name}">`;
+                            // Meta (name, score, rank)
+                            document.getElementById('modal-meta').innerHTML = `
+                                <span class="search-result-title mb-0" style="font-size:1.1rem;">Name: ${result.name}</span>
+                                <span class="search-result-score">Score: ${result.score}</span>
+                                <span class="search-result-rank">Rank: #${result.rank}</span>
+                            `;
+                            // Annotation
+                            let annotation = result.annotation;
+                            window.currentScoringBreakdown = result.scoring_breakdown || {};
+                            window.currentLLMBreakdown = result.llm_breakdown || {};
+                            document.getElementById('modal-annotation').innerHTML = renderAnnotation(annotation);
+                            // Remove LLM breakdown JSON display
+                            document.getElementById('modal-llm-breakdown-section').style.display = 'none';
+                            // Show modal
+                            const modal = new bootstrap.Modal(document.getElementById('cardDetailModal'));
+                            modal.show();
+                        });
+                    });
+                }
+            })
+            .catch((err) => {
+                resultsContainer.innerHTML = `
+                    <div class="alert alert-danger d-flex flex-column align-items-center justify-content-center gap-2 py-4 w-100 text-center" role="alert" style="font-size:1.1rem;">
+                        <i class="bi bi-x-circle-fill" style="font-size:1.5rem;"></i>
+                        <span>Sorry, something went wrong while fetching results.</span>
+                    </div>
+                `;
+            });
+        });
+
+        // Arrow rotation for collapse
+        document.addEventListener('DOMContentLoaded', function() {
+            function setupArrowToggle(collapseId, arrowId, buttonSelector) {
+                var collapseEl = document.getElementById(collapseId);
+                var arrowEl = document.getElementById(arrowId);
+                var buttonEl = document.querySelector(buttonSelector);
+                if (!collapseEl || !arrowEl || !buttonEl) return;
+                // Set initial state
+                if (collapseEl.classList.contains('show')) {
+                    arrowEl.classList.add('rotate');
+                    buttonEl.setAttribute('aria-expanded', 'true');
+                } else {
+                    arrowEl.classList.remove('rotate');
+                    buttonEl.setAttribute('aria-expanded', 'false');
+                }
+                collapseEl.addEventListener('show.bs.collapse', function () {
+                    arrowEl.classList.add('rotate');
+                    buttonEl.setAttribute('aria-expanded', 'true');
+                });
+                collapseEl.addEventListener('hide.bs.collapse', function () {
+                    arrowEl.classList.remove('rotate');
+                    buttonEl.setAttribute('aria-expanded', 'false');
+                });
+            }
+            setupArrowToggle('collapseEmbedding', 'arrow-embedding', 'button[data-bs-target="#collapseEmbedding"]');
+            setupArrowToggle('collapseLLM', 'arrow-llm', 'button[data-bs-target="#collapseLLM"]');
+
+            // Enable Bootstrap tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Weighting collapsible and enable/disable logic
+            // This function is now called directly in DOMContentLoaded
+        });
+
+        function renderAnnotation(annotation) {
+            if (!annotation || typeof annotation !== 'object') {
+                return '<span class="text-muted">—</span>';
+            }
+            let scoringBreakdown = window.currentScoringBreakdown || {};
+            let llmBreakdown = window.currentLLMBreakdown || {};
+            let html = '<div class="annotation-list">';
+            for (const [key, value] of Object.entries(annotation)) {
+                html += '<div class="annotation-item">';
+                let formattedKey = key.replace(/_/g, ' ')
+                    .replace(/\b(gui)\b/gi, 'GUI')
+                    .replace(/\b\w/g, l => l.toUpperCase());
+                let scoreStr = '';
+                // Always show embedding badge if present for this key
+                if (scoringBreakdown && scoringBreakdown[key] !== undefined) {
+                    scoreStr += ` <span class="badge bg-primary ms-1" style="font-size:0.85em;padding:2px 7px;vertical-align:middle;">Embedding: ${scoringBreakdown[key].toFixed(2)}%</span>`;
+                }
+                // Only show LLM badge if both embedding and LLM are present for this key
+                if (scoringBreakdown && scoringBreakdown[key] !== undefined && llmBreakdown && llmBreakdown[key] !== undefined) {
+                    scoreStr += ` <span class="badge bg-success ms-1" style="font-size:0.85em;padding:2px 7px;vertical-align:middle;">LLM: ${llmBreakdown[key].toFixed(2)}%</span>`;
+                }
+                html += `<span class="annotation-key">${formattedKey}${scoreStr}</span>`;
+                if (Array.isArray(value)) {
+                    html += `<div class="annotation-value">${value.length ? value.map(v => (typeof v === 'object' ? JSON.stringify(v) : v)).join(', ') : '<span class="text-muted">(empty)</span>'}</div>`;
+                } else if (typeof value === 'object' && value !== null) {
+                    html += `<div class="annotation-value">${Object.entries(value).map(([k, v]) => `<b>${k}:</b> ${typeof v === 'object' ? JSON.stringify(v) : v}`).join('<br>')}</div>`;
+                } else {
+                    html += `<div class="annotation-value">${value !== null && value !== undefined && value !== '' ? value : '<span class="text-muted">(empty)</span>'}</div>`;
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            return html;
+        }
+    });
+</script>
+{% endblock %} 
