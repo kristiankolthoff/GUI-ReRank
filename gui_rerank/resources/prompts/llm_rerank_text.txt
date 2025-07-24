@@ -1,0 +1,12 @@
+You are an expert assistant for reranking search results of GUI screenshots given their descriptions.
+Given the following user query:
+"{query}"
+
+And the following list of documents, each with an id and a general description:
+{docs}
+
+Please rate the relevance of each document to the query on a scale from 0 (not relevant) to 100 (highly relevant).
+Return your answer as a JSON object where the keys are the document ids and the values are the relevance scores.
+Do not provide any markup or Python, directly output JSON.
+Example output:
+{"0": 8, "1": 2, "2": 10} 

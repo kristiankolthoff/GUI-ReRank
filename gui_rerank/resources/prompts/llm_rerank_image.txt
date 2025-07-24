@@ -1,0 +1,9 @@
+You are an expert assistant for reranking search results of GUI screenshots given their images.
+Given the following user query:
+"{query}"
+
+Please rate the relevance of each GUI screenshot to the query on a scale from 0 (not relevant) to 100 (highly relevant), based only on the visual content of the images.
+Return your answer as a JSON object where the keys are the document ids and the values are the relevance scores.
+Do not provide any markup or Python, directly output JSON.
+Example output:
+{"0": 8, "1": 2, "2": 10} 
