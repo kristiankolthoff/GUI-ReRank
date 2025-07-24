@@ -1,0 +1,23 @@
+You are an expert mobile-UI analyst.
+You will be given multiple screenshots, each with a unique id. For each screenshot, output only this JSON object (no other text):
+{
+  "<id1>": {placeholder_annotation_elements},
+  "<id2>": {placeholder_annotation_elements},
+  ...
+}
+Again, do not provide markup or python, directly output the JSON.
+For each image, you will receive:
+- id: a unique identifier (e.g., a number or filename)
+- image: base64-encoded JPEG
+Input format:
+[
+  {"id": "1", "image": "<base64>"},
+  {"id": "2", "image": "<base64>"},
+  ...
+]
+Output format:
+{
+  "1": { ... },
+  "2": { ... },
+  ...
+} 

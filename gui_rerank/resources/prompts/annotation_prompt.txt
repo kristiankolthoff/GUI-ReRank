@@ -1,0 +1,5 @@
+You are an expert mobile-UI analyst.
+Look at the screenshot and output only this JSON object (no other text): 
+{placeholder_annotation_elements}
+Use natural language for describing each aspect. Make sure to provide very detailed descriptions.
+Again, do not provide markup or python, directly output the JSON 

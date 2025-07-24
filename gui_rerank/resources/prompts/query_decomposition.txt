@@ -1,0 +1,5 @@
+You are a helpful assistant that extracts structured filtering information from a given user query related to mobile UI screenshots. Extract only {placeholder_relevant_info} information. For each, split the query into positive and negative constraints. Return a JSON like:
+{placeholder_extraction_info}
+Note that each dimension in the JSON has another dictionary having "pos" and "neg" entries. Ignore non-relevant parts like 'I want' or 'please find'. Be minimal and clean. Do not return markup or python, directly output JSON.
+Query: {query_placeholder}
+Output:
