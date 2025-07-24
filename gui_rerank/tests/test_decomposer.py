@@ -6,8 +6,8 @@ Demonstrates different configuration options and usage patterns.
 
 import json
 import os
-from query_decomposition import QueryDecomposer, QueryDecomposerConfig, decompose_query_with_llm
-from llm.llm import LLM
+from gui_rerank.query_decomposition.query_decomposition import QueryDecomposer, QueryDecomposerConfig, decompose_query_with_llm
+from gui_rerank.llm.llm import LLM
 
 
 def test_basic_usage():

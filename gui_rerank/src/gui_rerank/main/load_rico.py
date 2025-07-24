@@ -5,7 +5,7 @@ from gui_rerank.models.screen_image import ScreenImage
 from gui_rerank.annotator.llm_annotator import LLMAnnotator
 from gui_rerank.llm.llm import LLM
 from gui_rerank.embeddings.lang_chain_embeddings import LangChainEmbeddings
-from gui_rerank.ranking.dataset_builder import DatasetBuilder
+from gui_rerank.dataset_builder.dataset_builder import DatasetBuilder
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List
 

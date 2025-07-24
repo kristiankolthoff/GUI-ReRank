@@ -1,6 +1,6 @@
 import os
 from gui_rerank.models.screen_image import ScreenImage
-from gui_rerank.ranking.dataset_builder import DatasetBuilder
+from gui_rerank.dataset_builder.dataset_builder import DatasetBuilder
 from gui_rerank.models.dataset import Dataset
 
 class MockAnnotator:
