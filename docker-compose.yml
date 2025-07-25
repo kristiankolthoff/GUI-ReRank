@@ -1,0 +1,66 @@
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: gui_rerank
+      MYSQL_USER: guiuser  
+      MYSQL_PASSWORD: guipass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A config worker -l info
+   # env_file:
+     # - .env
+    volumes:
+      - ./webapp:/app/webapp
+      - ./gui_rerank:/app/gui_rerank
+    depends_on:
+      - redis
+      - mysql
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_HOST=mysql
+      - DATABASE_NAME=gui_rerank
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: daphne -b 0.0.0.0 -p 8000 config.asgi:application
+    volumes:
+      - ./webapp:/app/webapp
+      - ./gui_rerank:/app/gui_rerank
+    depends_on:
+      - redis
+      - mysql
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DATABASE_HOST=mysql
+      - DATABASE_NAME=gui_rerank
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "8000:8000"
+
+volumes:
+  mysql_data: 
