@@ -6,3 +6,4 @@ This repository contains the supplementary material and implementation for our w
 
 - **webapp**: This directory contains a prototypical Django web application that demonstrates our approach in a web-based setting. It includes dataset management, search, and settings modules, as well as templates for the user interface.
 
+<img src="https://raw.githubusercontent.com/kristiankolthoff/GUI-ReRank/refs/heads/master/data/images/overview_gui_rerank.png" width="100%">
