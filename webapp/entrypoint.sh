@@ -10,4 +10,4 @@ done
 python /app/webapp/manage.py migrate
 
 # Start Daphne
-exec daphne -b 0.0.0.0 -p 8000 config.asgi:application 
+exec daphne -b 0.0.0.0 -p 8000 config.asgi:application
