@@ -76,8 +76,8 @@ To use *GUI-ReRank* with real data, *GUI-ReRank* ships with the large-scale publ
 
 ### Step 2: Download *Rico* Annotation and Embedding Data
 - **Dataset directory path:** `/rico/dataset`
-- Download the annotation and embedding data (provided by our project) into the `/rico/dataset` folder in your project root. This data includes metadata and embeddings required for the import.
-- **[TODO: Add download link for our dataset here]**
+- Download the annotation and embedding data (provided by our project and available through Zenodo) into the `/rico/dataset` folder in your project root. This data includes metadata and embeddings required for the import: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16451923.svg)](https://doi.org/10.5281/zenodo.16451923)
+
 - The `/rico/dataset` folder should contain all necessary metadata and embedding files for the *Rico* dataset import.
 
 ### Step 3: Start Only MySQL and Redis
@@ -100,7 +100,7 @@ docker-compose run --rm --entrypoint "" app python manage.py import_dataset --da
 ---
 
 ## Notes
-- The `/rico/images` and `/rico/dataset` folders must be present in your project root and will be mounted into the container automatically (see `docker-compose.yml`).
+- The `/rico/images` and `/rico/dataset` folders must be present in your project root and will be mounted into the container automatically (see `docker-compose.yml`). However, these files can be removed after importing the *Rico* dataset into *GUI-ReRank*.
 - The import command must be run **after** MySQL and Redis are up and running, otherwise the import will fail to connect to the database.
 - If you want to clean up orphan containers (leftover containers from previous runs), you can run:
   ```sh
