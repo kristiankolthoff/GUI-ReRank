@@ -76,8 +76,8 @@ To use *GUI-ReRank* with real data, *GUI-ReRank* ships with the large-scale publ
 
 ### Step 2: Download *Rico* Annotation and Embedding Data
 - **Dataset directory path:** `/rico/dataset`
-- Download the annotation and embedding data (provided by our project) into the `/rico/dataset` folder in your project root. This data includes metadata and embeddings required for the import.
-- **[TODO: Add download link for our dataset here]**
+- Download the annotation and embedding data (provided by our project and available through Zenodo) into the `/rico/dataset` folder in your project root. This data includes metadata and embeddings required for the import: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16451923.svg)](https://doi.org/10.5281/zenodo.16451923)
+
 - The `/rico/dataset` folder should contain all necessary metadata and embedding files for the *Rico* dataset import.
 
 ### Step 3: Start Only MySQL and Redis
