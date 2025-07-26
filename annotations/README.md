@@ -1,6 +1,6 @@
 # *Rico* Annotations Directory
 
-This directory contains annotation files for the *Rico* dataset. Each annotation is a mapping where the keys are the IDs of the *Rico* GUIs and the values are the annotations for multiple search dimensions. Note that this is computed on a filtered set of *Rico* spanning 48.066 GUIs. Each annotation entry includes:
+This directory contains annotation files for the *Rico* dataset. Each annotation is a mapping where the keys are the IDs of the *Rico* GUIs and the values are the annotations for multiple search dimensions. Note that this is computed on a filtered set of *Rico* spanning 48.066 GUIs. Annotations were created with GPT4.1 (accessed in July 2025) and a tempereature setting of 0.05. Each annotation entry includes:
 
 - **general_description**: A summary of all other search dimensions for the GUI.
 - **domain**: The application domain of the GUI.
