@@ -11,7 +11,7 @@ This repository contains the supplementary material and implementation for our w
 We provide a detailed explanation and show the functionality of *GUI-ReRank* in our YouTube video:
 
 <a href="https://www.youtube.com/watch?v=_7x9UCh82ug" target="_blank">
-  <img src="https://raw.githubusercontent.com/kristiankolthoff/GUI-ReRank/refs/heads/master/data/images/gui_rerank_youtube_thumbnail.png" alt="Watch the video" style="border:1px solid #ccc; border-radius:8px; padding:4px; max-width:100%;"/>
+  <img src="https://raw.githubusercontent.com/kristiankolthoff/GUI-ReRank/refs/heads/master/data/images/gui_rerank_youtube_thumbnail.png" alt="Watch the video" style="max-width:100%;"/>
 </a>
 
 
