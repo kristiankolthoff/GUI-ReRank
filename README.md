@@ -100,7 +100,7 @@ docker-compose run --rm --entrypoint "" app python manage.py import_dataset --da
 ---
 
 ## Notes
-- The `/rico/images` and `/rico/dataset` folders must be present in your project root and will be mounted into the container automatically (see `docker-compose.yml`).
+- The `/rico/images` and `/rico/dataset` folders must be present in your project root and will be mounted into the container automatically (see `docker-compose.yml`). However, these files can be removed after importing the *Rico* dataset into *GUI-ReRank*.
 - The import command must be run **after** MySQL and Redis are up and running, otherwise the import will fail to connect to the database.
 - If you want to clean up orphan containers (leftover containers from previous runs), you can run:
   ```sh
