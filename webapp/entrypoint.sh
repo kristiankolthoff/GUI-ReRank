@@ -6,7 +6,7 @@ while ! nc -z "$DATABASE_HOST" 3306; do
   sleep 1
 done
 
-# Run migrations 
+# Run migrations  
 python /app/webapp/manage.py migrate
 
 # Start Daphne
