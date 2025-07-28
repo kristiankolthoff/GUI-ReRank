@@ -23,6 +23,8 @@ The project is structured as follows:
 
 - **rico**: This directory contains the *Rico* dataset import folders. The `images` subfolder should hold all Rico image files (e.g., 1.jpg, 2.jpg, ...), and the `dataset` subfolder should contain annotation and embedding files required for importing the *Rico* dataset into *GUI-ReRank*
 
+- **annotations**: This directory contains annotation files for the *Rico* dataset (spanning 48.066 GUIs), where each annotation is a mapping and the keys are the IDs of the *Rico* GUIs and the values are the annotations for multiple search dimensions. This dataset is primarily used inside *GUI-ReRank* for enabling search over the *Rico* GUI dataset, however, might also be valuable for other research directions.
+
 
 
 ## Installation & Setup
