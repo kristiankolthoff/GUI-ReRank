@@ -130,7 +130,7 @@ To use *GUI-ReRank* with real data, you can import the large-scale publicly avai
   - The `--images_path` argument should point to the `combined` folder inside `rico/images/unique_uis` (e.g., `./rico/images/unique_uis/combined`).
   - The `--name` argument sets the name for the imported dataset in the application. We recommend using `"Rico GUI Dataset"` as the name.
 
-This process will import the Rico dataset into *GUI-ReRank* and make it available for search and reranking within the application.
+This process will import the Rico dataset into *GUI-ReRank* and make it available for search and reranking within the application. Please note that the import might take some time.
 
 ---
 
