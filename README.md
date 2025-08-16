@@ -130,12 +130,29 @@ To use *GUI-ReRank* with real data, you can import the large-scale publicly avai
   - The `--images_path` argument should point to the `combined` folder inside `rico/images/unique_uis` (e.g., `./rico/images/unique_uis/combined`).
   - The `--name` argument sets the name for the imported dataset in the application. We recommend using `"Rico GUI Dataset"` as the name.
 
-This process will import the Rico dataset into *GUI-ReRank* and make it available for search and reranking within the application.
+This process will import the *Rico* dataset into *GUI-ReRank* and make it available for search and reranking within the application.
+
+---
+
+### Running the Server After Importing Rico
+
+After importing the *Rico* dataset, you can start the application as follows:
+
+1. Start the required services (MySQL, Redis, Celery) in the background:
+   ```sh
+   docker-compose up -d
+   ```
+2. In a new terminal, activate your virtual environment if needed, navigate to the `webapp` folder, and start the Daphne server:
+   ```sh
+   cd webapp
+   daphne -b 0.0.0.0 -p 8000 config.asgi:application
+   ```
+
+This will launch the web interface at [http://localhost:8000](http://localhost:8000), where you can now search and explore the imported *Rico* dataset.
 
 ---
 
 ## Notes
-- The `/rico/images` and `/rico/dataset` folders must be present in your project root and will be mounted into the container automatically (see `docker-compose.yml`). However, these files can be removed after importing the *Rico* dataset into *GUI-ReRank*.
 - The import command must be run **after** MySQL and Redis are up and running, otherwise the import will fail to connect to the database.
 - If you want to clean up orphan containers (leftover containers from previous runs), you can run:
   ```sh
@@ -146,14 +163,10 @@ This process will import the Rico dataset into *GUI-ReRank* and make it availabl
 ---
 
 ## Troubleshooting
-- **File access issues:** If you encounter issues with file access, make sure the `/rico/images` and `/rico/dataset` folders are correctly mounted and accessible from within the container. You can check this by opening a shell in the container and listing the contents:
-  ```sh
-  docker-compose run --rm --entrypoint /bin/bash app
-  ls /rico/images
-  ls /rico/dataset
-  ```
-- **Database connection errors:** Ensure MySQL and Redis are running before starting the import or the web application.
-- **Running management commands:** If you need to run other Django management commands or debug inside the container, you can start a shell as shown above and run any command interactively.
-- **Performance:** For very large imports, the process may take some time. Monitor your system resources and consider running the import on a machine with sufficient RAM and disk space.
+- **Database or Redis connection errors:** Ensure that MySQL, Redis and Celery are running by checking with `docker-compose ps`. If they are not running, start them with `docker-compose up -d`. Also, verify that your environment variables (such as `DATABASE_HOST`, `REDIS_HOST`) are set to `localhost` if running the app locally.
+- **Missing API keys:** The application requires at least an OpenAI API key to function. Make sure you have entered and saved your API key(s) in the app settings before attempting to add datasets or perform searches.
+- **Dependency installation issues:** If you encounter errors during `poetry install`, ensure you are using Python 3.10.x and that your virtual environment is activated. Check that your `pyproject.toml` specifies the correct Python version range (`>=3.10,<4.0`).
+- **Large import performance:** Importing the *Rico* dataset may take significant time and disk space. Monitor your system resources and ensure you have sufficient RAM and storage available.
+- **Running management commands:** All Django management commands (such as `import_dataset`) should be run locally from within your activated virtual environment, not inside a Docker container.
 
 
