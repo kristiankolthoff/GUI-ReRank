@@ -50,54 +50,85 @@ cd gui_rerank
 
 You can start the application and explore its features even before importing any datasets. This is the base version without *Rico* and can already be used to annotate your own datasets and make them searchable within the app.
 
-1. **Start all services (MySQL, Redis, Celery, and the web app):**
-   Run the following command in your project root to build and start all necessary containers:
+1. **Start the required services (MySQL, Redis, Celery) with Docker Compose:**
+   Run the following command in your project root to build and start the necessary containers in the background:
    ```sh
-   docker-compose up --build
+   docker-compose up -d --build
    ```
    This command will:
    - Build the Docker images if they do not exist yet.
-   - Start the MySQL database, Redis server, Celery worker, and the Django web application.
-   - The web interface will be available at [http://localhost:8000](http://localhost:8000).
+   - Start the MySQL database, Redis server, and Celery worker in the background.
+   - The `-d` flag (detached mode) allows you to continue using the same terminal for the next steps while the services keep running.
 
-2. **Access the application:**
-   Open your browser and go to [http://localhost:8000](http://localhost:8000). You can now use *GUI-ReRank*, but please note that there will be no datasets loaded yet, so search and ranking features may not return results until you annotate or import data.
+2. **Set up a Python 3.10.18 virtual environment and install dependencies:**
+   The application itself (Django/Daphne) is run locally, not in Docker. You need to create a virtual environment, activate it, and install dependencies using Poetry. Below are two options:
+
+   - **With Conda:**
+     Create and activate a new environment called `gui-rerank` with Python 3.10.18, then install dependencies:
+     ```sh
+     conda create -n gui-rerank python=3.10.18 -y && conda activate gui-rerank && cd gui_rerank && python -m pip install --upgrade pip && pip install poetry && poetry install
+     ```
+     This will create and activate the environment, upgrade pip, install Poetry, and install all project dependencies as specified in `pyproject.toml`.
+
+   - **With venv:**
+     Create and activate a new virtual environment called `gui-rerank` using venv, then install dependencies:
+     ```sh
+     python3.10 -m venv gui-rerank && source gui-rerank/bin/activate && cd gui_rerank && python -m pip install --upgrade pip && pip install poetry && poetry install
+     ```
+     This will create and activate the environment, upgrade pip, install Poetry, and install all project dependencies as specified in `pyproject.toml`.
+
+3. **Run Django migrations:**
+   After installing dependencies, you need to apply database migrations. From the project root, run:
+   ```sh
+   cd webapp && python manage.py migrate
+   ```
+   This will apply all necessary migrations to set up the database schema.
+
+4. **Start the Daphne server:**
+   Finally, start the Daphne server to run the web application:
+   ```sh
+   daphne -b 0.0.0.0 -p 8000 config.asgi:application
+   ```
+   The web interface will be available at [http://localhost:8000](http://localhost:8000).
 
 ---
 
 ## Importing the *Rico* Dataset
 
-To use *GUI-ReRank* with real data, *GUI-ReRank* ships with the large-scale publicly available *Rico* dataset prepared for searching within *GUI-ReRank*, which consists of a diverse set of mobile UI images from Android. Follow these steps to prepare and import the dataset:
+To use *GUI-ReRank* with real data, you can import the large-scale publicly available *Rico* dataset. Follow these steps to prepare and import the dataset:
 
 ### Step 1: Download and Prepare *Rico* Images
-- **Images directory path:** `/rico/images`
-- Download the *Rico* images archive from the official source:
+- Download the *Rico* images archive (`unique_uis.tar.gz`) from the official source:
   [Rico GUI Dataset](https://storage.googleapis.com/crowdstf-rico-uiuc-4540/rico_dataset_v0.1/unique_uis.tar.gz)
-- Unzip the archive. After extraction, **move all image files directly into the `/rico/images` folder** in your project root (e.g., `/rico/images/1.jpg`, `/rico/images/2.jpg`, ...). This ensures the import script can find them easily.
-- The *Rico* dataset also contains JSON files for each image. These are not needed for *GUI-ReRank* and can be ignored and kept within the same directory.
+- Place the `unique_uis.tar.gz` file directly into the `rico/images` directory in your project root.
+- Extract the archive inside `rico/images`. After extraction, you will have a folder structure like:
+  - `rico/images/unique_uis/`
+    - `combined/`
+      - `1.jpg`, `2.jpg`, ...
+- The `combined` folder inside `unique_uis` contains all the Rico images. You do not need to move the images; just note the full path to the `combined` folder for the import step.
 
 ### Step 2: Download *Rico* Annotation and Embedding Data
-- **Dataset directory path:** `/rico/dataset`
-- Download the annotation and embedding data (provided by our project and available through Zenodo) into the `/rico/dataset` folder in your project root. This data includes metadata and embeddings required for the import: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16451923.svg)](https://doi.org/10.5281/zenodo.16451923)
+- Download the annotation and embedding data (provided by our project and available through Zenodo) into the `rico/data` directory in your project root. This data includes metadata and embeddings required for the import: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16451923.svg)](https://doi.org/10.5281/zenodo.16451923)
+- The `rico/data` folder should now contain all necessary metadata and embedding files for the *Rico* dataset import.
+- Make sure you know the full path to this folder for the import step.
 
-- The `/rico/dataset` folder should contain all necessary metadata and embedding files for the *Rico* dataset import.
-
-### Step 3: Start Only MySQL and Redis
-- Before importing, you need to have the database and Redis server running. Start them in the background with:
-```sh
-docker-compose up -d mysql redis
-```
-- This command will start only the MySQL and Redis containers, which are required for the import process. The `-d` flag runs them in detached mode so you can continue using your terminal.
+### Step 3: Ensure MySQL and Redis are running
+- Before importing, make sure the database and Redis server are running. If you have not already started them, use:
+  ```sh
+  docker-compose up -d
+  ```
+  This will start the required services in the background and you can continue using the same terminal.
 
 ### Step 4: Import the *Rico* Dataset
-- Now you can run the import command, which will process the images and metadata, create the necessary database entries, and copy the images to the correct location in the app's media folder:
-```sh
-docker-compose run --rm --entrypoint "" app python manage.py import_dataset --dataset_path /rico/dataset --images_path /rico/images --name "Rico GUI Dataset"
-```
-- This command runs the Django management command `import_dataset` inside the `app` container, bypassing the default entrypoint so only the import runs.
-- The `--dataset_path` and `--images_path` arguments tell the script where to find the data and images.
-- The `--name` argument sets the name for the imported dataset in the application.
-- The `--rm` flag ensures the container is removed after the import completes.
+- Run the import command locally (not in Docker). This will process the images and metadata, create the necessary database entries, and copy the images to the correct location in the app's media folder:
+  ```sh
+  python manage.py import_dataset --dataset_path ./rico/data --name "Rico GUI Dataset" --images_path ./rico/images/unique_uis/combined
+  ```
+  - The `--dataset_path` argument should point to the `rico/data` directory (e.g., `./rico/data`).
+  - The `--images_path` argument should point to the `combined` folder inside `rico/images/unique_uis` (e.g., `./rico/images/unique_uis/combined`).
+  - The `--name` argument sets the name for the imported dataset in the application. We recommend using `"Rico GUI Dataset"` as the name.
+
+This process will import the Rico dataset into *GUI-ReRank* and make it available for search and reranking within the application.
 
 ---
 
