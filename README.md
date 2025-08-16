@@ -36,8 +36,7 @@ This section will guide you through setting up *GUI-ReRank* on your machine, inc
 First, download the codebase to your local machine using git:
 
 ```sh
-git clone https://github.com/kristiankolthoff/GUI-ReRank.git
-cd gui_rerank
+git clone https://github.com/kristiankolthoff/GUI-ReRank.git && cd GUI-ReRank
 ```
 
 ### 2. Install Docker & Docker Compose
