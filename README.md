@@ -1,5 +1,7 @@
 # GUI-ReRank: Enhancing GUI Retrieval with Multi-Modal LLM-based GUI Reranking
 
+[![DOI](https://zenodo.org/badge/1025302192.svg)](https://doi.org/10.5281/zenodo.16888082)
+
 This repository contains the supplementary material and implementation for our work on enhancing GUI retrieval using multi-modal LLM-based GUI reranking to the **ASE 2025** conference demonstration track. 
 
 ## Introduction and Overview
