@@ -13,10 +13,7 @@ WORKDIR /app/gui_rerank
 RUN poetry config virtualenvs.create false \
  && poetry install --no-interaction --no-ansi
 
-WORKDIR /app
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Removed requirements.txt installation, now using only Poetry for dependencies
 
 RUN ls -l /app/gui_rerank/src/gui_rerank
 RUN python -c "import gui_rerank.llm.llm; print('Import works!')"
