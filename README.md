@@ -124,7 +124,7 @@ To use *GUI-ReRank* with real data, you can import the large-scale publicly avai
 ### Step 4: Import the *Rico* Dataset
 - Run the import command locally (not in Docker). This will process the images and metadata, create the necessary database entries, and copy the images to the correct location in the app's media folder:
   ```sh
-  python manage.py import_dataset --dataset_path ./rico/data --name "Rico GUI Dataset" --images_path ./rico/images/unique_uis/combined
+  python manage.py import_dataset --dataset_path ./rico/dataset --name "Rico GUI Dataset" --images_path ./rico/images/unique_uis/combined
   ```
   - The `--dataset_path` argument should point to the `rico/data` directory (e.g., `./rico/data`).
   - The `--images_path` argument should point to the `combined` folder inside `rico/images/unique_uis` (e.g., `./rico/images/unique_uis/combined`).
