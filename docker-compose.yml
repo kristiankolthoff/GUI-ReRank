@@ -40,31 +40,5 @@ services:
       - DATABASE_USER=root
       - DATABASE_PASSWORD=root
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    entrypoint: ["/app/webapp/entrypoint.sh"]
-    volumes:
-      - ./webapp:/app/webapp
-      - ./gui_rerank:/app/gui_rerank
-      - ./rico/dataset:/rico/dataset
-      - ./rico/images:/rico/images
-    depends_on:
-      - redis
-      - mysql
-    environment:
-      - DJANGO_SETTINGS_MODULE=config.settings
-      - DATABASE_HOST=mysql
-      - DATABASE_NAME=gui_rerank
-      - DATABASE_USER=root
-      - DATABASE_PASSWORD=root
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    ports:
-      - "8000:8000"
-
 volumes:
   mysql_data: 
