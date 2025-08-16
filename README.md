@@ -144,7 +144,6 @@ After importing the *Rico* dataset, you can start the application as follows:
    ```
 2. In a new terminal, activate your virtual environment if needed, navigate to the `webapp` folder, and start the Daphne server:
    ```sh
-   cd webapp
    daphne -b 0.0.0.0 -p 8000 config.asgi:application
    ```
 
