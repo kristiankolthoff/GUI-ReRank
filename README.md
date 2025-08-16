@@ -90,6 +90,9 @@ You can start the application and explore its features even before importing any
    ```
    The web interface will be available at [http://localhost:8000](http://localhost:8000).
 
+5. **Configure API keys in the running app:**
+   After starting the Daphne server and opening the web interface, you must first provide at least your OpenAI API key in the application settings and save it. This is required for the core functionality. If you wish to use Google or Anthropic models, you can also provide those API keys in the settings. However, an OpenAI API key is required in any case. Once you have saved your API key(s), you can begin adding datasets or conducting searches in the app.
+
 ---
 
 ## Importing the *Rico* Dataset
