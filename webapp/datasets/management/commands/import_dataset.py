@@ -22,9 +22,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # 1. Load the framework dataset
-        dataset_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../gui_rerank/resources/datasets/'))
+        #dataset_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../gui_rerank/resources/datasets/'))
         dataset_name = options['dataset_path']
-        framework_dataset = FrameworkDataset.load(dataset_dir, name=dataset_name)
+        framework_dataset = FrameworkDataset.load(dataset_name)
         print(framework_dataset)
         # 2. Create Django Dataset object
         django_dataset = DjangoDataset.objects.create(
