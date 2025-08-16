@@ -6,7 +6,7 @@ authors = [
     {name = "Kristian Kolthoff", email = "kristian.kolthoff@tu-clausthal.de"}
 ]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<4.0"
 dependencies = [
     "amqp==5.3.1",
     "annotated-types==0.7.0",
